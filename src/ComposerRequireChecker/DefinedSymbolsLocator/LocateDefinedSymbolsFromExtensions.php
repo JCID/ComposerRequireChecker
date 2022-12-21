@@ -11,6 +11,8 @@ use Throwable;
 use function array_keys;
 use function array_merge;
 
+use const PHP_VERSION_ID;
+
 class LocateDefinedSymbolsFromExtensions
 {
     /**
@@ -35,13 +37,19 @@ class LocateDefinedSymbolsFromExtensions
         $definedSymbols = [];
         foreach ($extensionNames as $extensionName) {
             $extensionName = self::ALTERNATIVES[$extensionName] ?? $extensionName;
+
+            // @infection-ignore-all LessThan No point in testing this on 8.2.0 specifically
+            if ($extensionName === 'random' && PHP_VERSION_ID < 80200) {
+                continue;
+            }
+
             try {
                 $extensionReflection = new ReflectionExtension($extensionName);
                 $definedSymbols      = array_merge(
                     $definedSymbols,
                     array_keys($extensionReflection->getConstants()),
                     array_keys($extensionReflection->getFunctions()),
-                    $extensionReflection->getClassNames()
+                    $extensionReflection->getClassNames(),
                 );
             } catch (Throwable $e) {
                 throw new UnknownExtension($e->getMessage());

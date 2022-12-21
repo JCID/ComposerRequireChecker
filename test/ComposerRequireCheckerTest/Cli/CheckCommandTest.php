@@ -112,7 +112,7 @@ final class CheckCommandTest extends TestCase
                 'Foo\Bar\Baz' => [],
                 'libxml_clear_errors' => ['ext-libxml'],
             ],
-            $actual['unknown-symbols']
+            $actual['unknown-symbols'],
         );
         self::assertStringEndsNotWith(PHP_EOL, $display);
     }
@@ -151,7 +151,7 @@ final class CheckCommandTest extends TestCase
         // verbose output should not be shown
         $this->assertDoesNotMatchRegularExpression(
             '/Collecting defined (vendor|extension) symbols... found \d+ symbols./',
-            $display
+            $display,
         );
         $this->assertDoesNotMatchRegularExpression('/Collecting used symbols... found \d+ symbols./', $display);
     }
@@ -175,7 +175,7 @@ final class CheckCommandTest extends TestCase
     {
         $root = vfsStream::setup();
         vfsStream::create([
-            'config.json' => <<<JSON
+            'config.json' => <<<'JSON'
 {
     "scan-files": ["src/ComposerRequireChecker/Cli/CheckCommand.php"]
 }
@@ -191,7 +191,7 @@ JSON
 
         $this->assertMatchesRegularExpression(
             '/There were no unknown symbols found./',
-            $this->commandTester->getDisplay()
+            $this->commandTester->getDisplay(),
         );
     }
 
@@ -199,7 +199,7 @@ JSON
     {
         $root = vfsStream::setup();
         vfsStream::create(
-            ['config.json' => '{"scan-files":["test/ComposerRequireCheckerTest/Cli/CheckCommandTest.php"]}']
+            ['config.json' => '{"scan-files":["test/ComposerRequireCheckerTest/Cli/CheckCommandTest.php"]}'],
         );
 
         $exitCode = $this->commandTester->execute([
@@ -207,14 +207,12 @@ JSON
             'composer-json' => dirname(__DIR__, 3) . '/composer.json',
             '--config-file' => $root->getChild('config.json')->url(),
         ]);
-        $this->assertNotEquals(0, $exitCode);
 
-        $display = $this->commandTester->getDisplay();
-        $this->assertStringContainsString('The following 2 unknown symbols were found', $display);
-        $this->assertStringContainsString('org\bovigo\vfs\vfsStream', $display);
-        $this->assertStringContainsString('mikey179/vfsstream', $display);
-        $this->assertStringContainsString('PHPUnit\Framework\TestCase', $display);
-        $this->assertStringContainsString('phpunit/phpunit', $display);
+        $this->assertNotEquals(0, $exitCode);
+        $this->assertMatchesRegularExpression(
+            '/The following 2 unknown symbols were found.*PHPUnit\\\\Framework\\\\TestCase/s',
+            $this->commandTester->getDisplay(),
+        );
     }
 
     public function testNoUnknownSymbolsFound(): void
@@ -226,7 +224,7 @@ JSON
         self::assertSame(Command::SUCCESS, $this->commandTester->getStatusCode());
         self::assertStringContainsString(
             'There were no unknown symbols found.',
-            $this->commandTester->getDisplay()
+            $this->commandTester->getDisplay(),
         );
     }
 
@@ -268,7 +266,7 @@ JSON
         self::assertSame(Command::SUCCESS, $this->commandTester->getStatusCode());
         self::assertStringContainsString(
             'There were no unknown symbols found.',
-            $this->commandTester->getDisplay()
+            $this->commandTester->getDisplay(),
         );
     }
 
@@ -283,15 +281,15 @@ JSON
         $this->assertNotEquals(0, $exitCode);
         $this->assertMatchesRegularExpression(
             '/The following 2 unknown symbols were found/s',
-            $output
+            $output,
         );
         $this->assertMatchesRegularExpression(
             '/Composer\\\\InstalledVersions/s',
-            $output
+            $output,
         );
         $this->assertMatchesRegularExpression(
             '/json_decode/s',
-            $output
+            $output,
         );
     }
 
@@ -312,15 +310,15 @@ JSON
         $this->assertNotEquals(0, $exitCode);
         $this->assertMatchesRegularExpression(
             '/The following 1 unknown symbols were found/s',
-            $output
+            $output,
         );
         $this->assertMatchesRegularExpression(
             '/Composer\\\\InstalledVersions/s',
-            $output
+            $output,
         );
         $this->assertDoesNotMatchRegularExpression(
             '/json_decode/s',
-            $output
+            $output,
         );
     }
 
@@ -338,9 +336,7 @@ JSON
         ]);
     }
 
-    /**
-     * @requires PHP >= 8.1.0
-     */
+    /** @requires PHP >= 8.1.0 */
     public function testNoUnknownEnumSymbolsFound(): void
     {
         $this->commandTester->execute([
@@ -350,7 +346,7 @@ JSON
         self::assertSame(Command::SUCCESS, $this->commandTester->getStatusCode());
         self::assertStringContainsString(
             'There were no unknown symbols found.',
-            $this->commandTester->getDisplay()
+            $this->commandTester->getDisplay(),
         );
     }
 }

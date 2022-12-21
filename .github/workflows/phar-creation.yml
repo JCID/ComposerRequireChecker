@@ -14,13 +14,13 @@ jobs:
 
         steps:
             - name: "Checkout"
-              uses: "actions/checkout@v2"
+              uses: "actions/checkout@v3"
 
             - name: "Install PHP"
               uses: "shivammathur/setup-php@v2"
               with:
                   coverage: "none"
-                  php-version: "8.0"
+                  php-version: "8.1"
                   ini-values: memory_limit=-1, phar.readonly=0
 
             - name: "Import GPG Key"
@@ -35,7 +35,7 @@ jobs:
               run: "vendor/bin/phing phar-build phar-sign"
 
             - name: "Upload phar file artifact"
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v3
               with:
                   name: composer-require-checker.phar
                   path: |

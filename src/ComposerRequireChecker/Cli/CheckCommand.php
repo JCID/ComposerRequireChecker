@@ -48,9 +48,7 @@ use function is_string;
 use function realpath;
 use function sprintf;
 
-/**
- * @psalm-import-type ComposerData from LocateComposerPackageSourceFiles
- */
+/** @psalm-import-type ComposerData from LocateComposerPackageSourceFiles */
 class CheckCommand extends Command
 {
     public const NAME                 = 'check';
@@ -66,26 +64,26 @@ class CheckCommand extends Command
                 null,
                 InputOption::VALUE_REQUIRED,
                 'the config file to configure the checking options',
-                self::DEFAULT_CONFIG_PATH
+                self::DEFAULT_CONFIG_PATH,
             )
             ->addArgument(
                 'composer-json',
                 InputArgument::OPTIONAL,
                 'the composer.json of your package, that should be checked',
-                './composer.json'
+                './composer.json',
             )
             ->addOption(
                 'ignore-parse-errors',
                 null,
                 InputOption::VALUE_NONE,
                 'this will cause ComposerRequireChecker to ignore errors when files cannot be parsed, otherwise'
-                . ' errors will be thrown'
+                . ' errors will be thrown',
             )
             ->addOption(
                 'output',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'generate output either as "text" or as "json", if specified, "quiet mode" is implied'
+                'generate output either as "text" or as "json", if specified, "quiet mode" is implied',
             );
     }
 
@@ -100,7 +98,7 @@ class CheckCommand extends Command
 
         if (! in_array($optionValue, ['text', 'json'])) {
             throw new InvalidArgumentException(
-                'Option "output" must be either of value "json", "text" or omitted altogether'
+                'Option "output" must be either of value "json", "text" or omitted altogether',
             );
         }
     }
@@ -118,7 +116,7 @@ class CheckCommand extends Command
         if (is_string($composerJsonArgument) === false) {
             throw new InvalidArgumentException(sprintf(
                 'composer-json must be type of string but %s given',
-                gettype($composerJsonArgument)
+                gettype($composerJsonArgument),
             ));
         }
 
@@ -144,9 +142,9 @@ class CheckCommand extends Command
                     (new ComposeGenerators())->__invoke(
                         $getAdditionalSourceFiles($options->getScanFiles(), dirname($composerJson)),
                         $getPackageSourceFiles($composerData, dirname($composerJson)),
-                        (new LocateComposerPackageDirectDependenciesSourceFiles())->__invoke($composerJson)
-                    )
-                )
+                        (new LocateComposerPackageDirectDependenciesSourceFiles())->__invoke($composerJson),
+                    ),
+                ),
             ),
             (new LocateDefinedSymbolsFromComposerRuntimeApi())->__invoke($composerData),
         );
@@ -155,7 +153,7 @@ class CheckCommand extends Command
 
         $this->verbose('Collecting defined extension symbols... ', $output);
         $definedExtensionSymbols = (new LocateDefinedSymbolsFromExtensions())->__invoke(
-            (new DefinedExtensionsResolver())->__invoke($composerJson, $options->getPhpCoreExtensions())
+            (new DefinedExtensionsResolver())->__invoke($composerJson, $options->getPhpCoreExtensions()),
         );
         $this->verbose('found ' . count($definedExtensionSymbols) . ' symbols.', $output, true);
 
@@ -164,9 +162,9 @@ class CheckCommand extends Command
             $sourcesASTs(
                 (new ComposeGenerators())->__invoke(
                     $getPackageSourceFiles($composerData, dirname($composerJson)),
-                    $getAdditionalSourceFiles($options->getScanFiles(), dirname($composerJson))
-                )
-            )
+                    $getAdditionalSourceFiles($options->getScanFiles(), dirname($composerJson)),
+                ),
+            ),
         );
         $this->verbose('found ' . count($usedSymbols) . ' symbols.', $output, true);
 
@@ -179,17 +177,14 @@ class CheckCommand extends Command
             $usedSymbols,
             $definedVendorSymbols,
             $definedExtensionSymbols,
-            $options->getSymbolWhitelist()
+            $options->getSymbolWhitelist(),
         );
 
         // pcov which is used for coverage does not detect executed code in anonymous functions used as callable
         // therefore we require to have closure class.
         $outputWrapper = new class ($output) {
-            private OutputInterface $output;
-
-            public function __construct(OutputInterface $output)
+            public function __construct(private OutputInterface $output)
             {
-                $this->output = $output;
             }
 
             public function __invoke(string $string): void
@@ -203,14 +198,14 @@ class CheckCommand extends Command
                 $application   = $this->getApplication();
                 $resultsWriter = new CliJson(
                     $outputWrapper,
-                    $application !== null ? $application->getVersion() : 'Unknown version',
+                    $application?->getVersion() ?? 'Unknown version',
                     static fn () => new DateTimeImmutable()
                 );
                 break;
             case 'text':
                 $resultsWriter = new CliText(
                     $output,
-                    $outputWrapper
+                    $outputWrapper,
                 );
                 break;
             default:
@@ -232,7 +227,7 @@ class CheckCommand extends Command
 
                     return $guessedDependencies;
                 },
-                array_combine($unknownSymbols, $unknownSymbols)
+                array_combine($unknownSymbols, $unknownSymbols),
             ),
         );
 
@@ -259,8 +254,8 @@ class CheckCommand extends Command
             throw new InvalidArgumentException(
                 sprintf(
                     'Configuration file [%s] does not exist.',
-                    $fileName
-                )
+                    $fileName,
+                ),
             );
         }
 

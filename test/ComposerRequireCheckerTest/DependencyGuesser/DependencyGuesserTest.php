@@ -6,14 +6,19 @@ namespace ComposerRequireCheckerTest\DependencyGuesser;
 
 use ComposerRequireChecker\Cli\Options;
 use ComposerRequireChecker\DependencyGuesser\DependencyGuesser;
-use ComposerRequireChecker\DependencyGuesser\GuessFromLoadedExtensions;
 use PHPUnit\Framework\TestCase;
 
 use function extension_loaded;
+use function iterator_to_array;
 
 final class DependencyGuesserTest extends TestCase
 {
     private DependencyGuesser $guesser;
+
+    protected function setUp(): void
+    {
+        $this->guesser = new DependencyGuesser();
+    }
 
     public function testGuessExtJson(): void
     {
@@ -21,26 +26,22 @@ final class DependencyGuesserTest extends TestCase
             $this->markTestSkipped('extension json is not available');
         }
 
-        $guesser = new DependencyGuesser([new GuessFromLoadedExtensions()]);
-
-        $result = $guesser->__invoke('json_decode');
+        $result = iterator_to_array($this->guesser->__invoke('json_decode'));
         $this->assertNotEmpty($result);
         $this->assertContains('ext-json', $result);
     }
 
     public function testDoesNotSuggestAnything(): void
     {
-        $guesser = new DependencyGuesser([new GuessFromLoadedExtensions()]);
-
-        $result = $guesser->__invoke('an_hopefully_unique_unknown_symbol');
+        $result = $this->guesser->__invoke('an_hopefully_unique_unknown_symbol');
         $this->assertFalse($result->valid());
     }
 
     public function testCoreExtensionsResolvesToPHP(): void
     {
-        $guesser = new DependencyGuesser([new GuessFromLoadedExtensions(new Options(['php-core-extensions' => ['SPL', 'something-else']]))]);
-
-        $result = $guesser->__invoke('RecursiveDirectoryIterator');
+        $options       = new Options(['php-core-extensions' => ['SPL', 'something-else']]);
+        $this->guesser = new DependencyGuesser($options);
+        $result        = iterator_to_array($this->guesser->__invoke('RecursiveDirectoryIterator'));
         $this->assertNotEmpty($result);
         $this->assertContains('php', $result);
     }
